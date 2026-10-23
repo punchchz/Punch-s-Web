@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Punch Portfolio</title>
+<meta name="description" content="Punch — graphic design portfolio">
+<!--
+  ================================================================
+  HOW TO EDIT (no build step, one file)
+  ----------------------------------------------------------------
+  1. Put your images / videos in a folder next to this file, e.g. /media
+  2. Scroll down to `const WORKS = [...]` and add one entry per work:
+
+     { src: "media/vega-01.jpg", title: "Vegaøyan", tags: "Visual Identity", year: "2026" }
+     { src: "media/eship.mp4",  type: "video", title: "E'Ship", tags: "Motion", year: "2026" }
+
+     - type   "image" (default) or "video" (mp4/webm; plays muted + looped)
+     - ratio  optional, e.g. "4/5" — reserves width before the file loads (no jumps)
+     - color  only used when there is no src (placeholder panel)
+  3. Change the text in the INTRO / ABOUT sections and the CONFIG speeds.
+
+  Tips: export images ~2000px tall, JPG/WebP ~300–600 KB.
+        Export video as H.264 mp4, no audio, ~1080px tall, short loops.
+  ================================================================
+-->
+<style>
+  :root{
+    --bg:#121212;color-scheme:dark;
+    --ink:#111;
+    --hl:#fffbc4;          /* hover label highlight */
+    --ui:#fff;             /* fixed text (blends with difference) */
+    --pad:12px;
+    --fs:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:var(--bg)}
+  body{
+    font:var(--fs)/1.3 "Helvetica Neue",Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ---------- marquee ---------- */
+  .stage{position:fixed;inset:0;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+  .track{display:flex;height:100%;will-change:transform}
+  .work{flex:none;height:100%;position:relative;overflow:hidden}
+  .work img,.work video{display:block;height:100%;width:auto;pointer-events:none;-webkit-user-drag:none}
+  .work img[style*="aspect-ratio"],.work video[style*="aspect-ratio"]{object-fit:cover}
+
+  /* placeholder panel (shown when a work has no src yet) */
+  .ph{height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:22px;color:rgba(0,0,0,.78)}
+  .ph b{font-weight:400;font-size:clamp(40px,9vh,110px);line-height:.9;letter-spacing:-.03em}
+  .ph i{font-style:normal;opacity:.6}
+
+  /* ---------- hover label ---------- */
+  .label{
+    position:fixed;left:0;top:0;z-index:6;pointer-events:none;
+    text-align:center;white-space:nowrap;
+    opacity:0;transform:translate(-50%,-50%);
+  }
+  .label.on{opacity:1}
+  .label div{line-height:1.3}
+  .label span{background:var(--hl);padding:0 3px}
+
+  /* ---------- fixed UI ---------- */
+  .ui{position:fixed;z-index:5;color:var(--ui);mix-blend-mode:difference}
+  .intro{top:calc(var(--pad) + env(safe-area-inset-top,0px));left:calc(var(--pad) + env(safe-area-inset-left,0px));max-width:310px;pointer-events:none}
+  .intro p+p{margin-top:1.3em}
+  .intro a{pointer-events:auto}
+  .name{bottom:calc(var(--pad) + env(safe-area-inset-bottom,0px));left:calc(var(--pad) + env(safe-area-inset-left,0px))}
+  .about-btn{bottom:var(--pad);left:calc(var(--pad) + 310px - 4em);background:none;border:0;font:inherit;color:var(--ui);cursor:pointer;text-transform:uppercase;letter-spacing:.02em}
+  .about-btn:hover{text-decoration:underline}
+
+  /* ---------- about overlay ---------- */
+  .about{
+    position:fixed;inset:0 auto 0 0;z-index:8;width:min(460px,100%);
+    background:#f4f3ef;color:var(--ink);padding:var(--pad) var(--pad) 48px;
+    transform:translateX(-102%);transition:transform .45s cubic-bezier(.7,0,.2,1);overflow:auto
+  }
+  .about.open{transform:none}
+  .about h2{font-weight:400;font-size:inherit;margin-bottom:1.3em}
+  .about p,.about dl{margin-bottom:1.3em;max-width:38ch}
+  .about dt{opacity:.5}
+  .about dd{margin-bottom:.6em}
+  .about .close{position:absolute;bottom:var(--pad);left:var(--pad);background:none;border:0;font:inherit;cursor:pointer;text-transform:uppercase}
+
+  @media (max-width:640px){
+    .intro{max-width:calc(100% - 2*var(--pad))}
+    .about-btn{left:auto;right:var(--pad)}
+  }
+</style>
+</head>
+<body>
+
+<main class="stage" id="stage" aria-label="Selected works">
+  <div class="track" id="track"></div>
+</main>
+
+<div class="label" id="label" aria-hidden="true"></div>
+
+<!-- INTRO (top-left) -->
+<header class="ui intro">
+  <p>Punch is a Bangkok-born graphic designer based in Providence, finishing a BFA in Graphic Design at RISD with a concentration in Computation, Technology, and Culture. Work across visual identity, editorial, motion and type.</p>
+  <p><a href="mailto:ratchpol.sv@gmail.com">ratchpol.sv@gmail.com</a><br><a href="https://instagram.com/" target="_blank" rel="noopener">@instagram</a></p>
+</header>
+
+<div class="ui name">Punch</div>
+<button class="ui about-btn" id="aboutBtn">About</button>
+
+<!-- ABOUT (slides in from the left) -->
+<aside class="about" id="about" aria-hidden="true">
+  <h2>About</h2>
+  <p>Thanutchpatch “Punch” Kulphisanrat is a graphic designer from Bangkok, Thailand, currently a senior at Rhode Island School of Design.</p>
+  <dl>
+    <dt>Experience</dt>
+    <dd>Marcom Design Intern, Apple — Retail</dd>
+    <dd>Graphic Design Intern, MakeDo, Providence — 2025</dd>
+    <dd>Communication Design Intern, Greyhound Original, Bangkok — 2024</dd>
+    <dt>Education</dt>
+    <dd>BFA Graphic Design, RISD — CTC concentration</dd>
+    <dt>Contact</dt>
+    <dd><a href="mailto:ratchpol.sv@gmail.com">ratchpol.sv@gmail.com</a></dd>
+  </dl>
+  <button class="close" id="aboutClose">Close</button>
+</aside>
+
+<script>
+/* =================== CONFIG =================== */
+const CONFIG = {
+  speed: 45,        // auto-scroll speed in px per second (0 = no auto-scroll)
+  hoverSpeed: 1,    // speed multiplier while hovering a work (e.g. 0.3 to slow down)
+  wheel: 1,         // scroll/trackpad sensitivity
+  smooth: 0.12,     // 0.05 = floaty, 0.3 = snappy
+  decodeSpeed: 55,  // hover text: letters revealed per second
+  decodeChar: '÷',  // symbol shown before each letter is revealed
+};
+
+/* =================== WORKS ===================
+   Replace the placeholders with your files. Order = order on screen. */
+const WORKS = [
+  { src:"", ratio:"4/5",  color:"#e9e4d6", title:"Vegaøyan",        tags:"Visual Identity, Editorial, Signage", year:"2026" },
+  { src:"", ratio:"3/4",  color:"#2f4ad8", title:"E'Ship",          tags:"Visual Identity, Social",             year:"2026" },
+  { src:"", ratio:"5/4",  color:"#f2c230", title:"Banthat Thai",    tags:"Branding, Packaging",                 year:"2026" },
+  { src:"", ratio:"2/3",  color:"#d9d9d4", title:"Jordan Seaberry", tags:"Book design",                         year:"2025" },
+  { src:"", ratio:"4/5",  color:"#e5452f", title:"MakeDo",          tags:"Graphic design",                      year:"2025" },
+  { src:"", ratio:"16/9", color:"#9fb7a4", title:"Film Practices",  tags:"Moving image",                        year:"2026" },
+  { src:"", ratio:"3/4",  color:"#e7a3c4", title:"Greyhound Original", tags:"Communication design",             year:"2024" },
+  // examples with real files:
+  // { src:"media/project.jpg", ratio:"4/5", title:"Project", tags:"Editorial design", year:"2026" },
+  // { src:"media/loop.mp4", type:"video", ratio:"16/9", title:"Project", tags:"Motion", year:"2026" },
+];
+
+/* =================== ENGINE (no need to edit) =================== */
+const stage = document.getElementById('stage');
+const track = document.getElementById('track');
+const label = document.getElementById('label');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canHover = matchMedia('(hover: hover)').matches;
+
+function makeWork(w, i){
+  const el = document.createElement('figure');
+  el.className = 'work';
+  el.dataset.i = i;
+  let m;
+  if (w.src && w.type === 'video'){
+    m = document.createElement('video');
+    Object.assign(m, { src:w.src, muted:true, loop:true, autoplay:true, playsInline:true, preload:'auto' });
+    m.setAttribute('muted',''); m.setAttribute('playsinline','');
+    m.addEventListener('loadedmetadata', measure);
+  } else if (w.src){
+    m = document.createElement('img');
+    Object.assign(m, { src:w.src, alt:w.title || '', decoding:'async', draggable:false });
+    m.addEventListener('load', measure);
+  } else {
+    m = document.createElement('div');
+    m.className = 'ph';
+    m.style.background = w.color || '#ddd';
+    m.innerHTML = `<i>${String(i+1).padStart(2,'0')}</i><b>${w.title||''}</b><i>${w.tags||''}</i>`;
+  }
+  if (w.ratio) m.style.aspectRatio = w.ratio;
+  el.appendChild(m);
+  return el;
+}
+
+let setW = 0;          // width of one full set of works
+const COPIES = 3;      // sets rendered back-to-back for the seamless loop
+function build(){
+  track.innerHTML = '';
+  for (let c = 0; c < COPIES; c++){
+    WORKS.forEach((w,i) => {
+      const el = makeWork(w,i);
+      if (c) el.setAttribute('aria-hidden','true');
+      track.appendChild(el);
+    });
+  }
+  measure();
+}
+function measure(){
+  const first = track.children[0], second = track.children[WORKS.length];
+  if (first && second) setW = second.offsetLeft - first.offsetLeft;
+  // add more copies if a short set doesn't fill wide screens
+  if (setW && setW * (track.children.length / WORKS.length - 1) < innerWidth){
+    WORKS.forEach((w,i) => { const el = makeWork(w,i); el.setAttribute('aria-hidden','true'); track.appendChild(el); });
+  }
+}
+addEventListener('resize', measure);
+
+/* motion */
+let x = 0, pending = 0, last = performance.now();
+let mouse = { x:-1, y:-1, inside:false };
+let hovering = false, mult = 1;
+
+stage.addEventListener('wheel', e => {
+  e.preventDefault();
+  const d = (Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * (e.deltaMode === 1 ? 32 : 1);
+  pending += d * CONFIG.wheel;      // scroll → move sideways
+}, { passive:false });
+
+// touch / pen drag
+let drag = null;
+stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') drag = { x:e.clientX }; });
+addEventListener('pointermove', e => {
+  if (e.pointerType === 'mouse'){ mouse.x = e.clientX; mouse.y = e.clientY; mouse.inside = true; }
+  if (drag){ pending += (drag.x - e.clientX) * 1.2; drag.x = e.clientX; }
+});
+addEventListener('pointerup', () => drag = null);
+addEventListener('pointercancel', () => drag = null);
+document.addEventListener('mouseleave', () => { mouse.inside = false; });
+
+// keyboard
+addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') pending += innerWidth * .4;
+  if (e.key === 'ArrowLeft')  pending -= innerWidth * .4;
+  if (e.key === 'Escape') toggleAbout(false);
+});
+
+let shownIndex = -1;
+function updateLabel(){
+  // desktop: label sits on the cursor. touch: label sits in the middle of the screen
+  const px = canHover ? mouse.x : innerWidth/2;
+  const py = canHover ? mouse.y : innerHeight/2;
+  const active = canHover ? mouse.inside : true;
+  let work = null;
+  if (active && !aboutOpen){
+    const hit = document.elementFromPoint(px, py);
+    work = hit && hit.closest && hit.closest('.work');
+  }
+  hovering = !!work;
+  const i = work ? +work.dataset.i : -1;
+  if (i !== shownIndex){
+    shownIndex = i;
+    if (i > -1) startDecode(WORKS[i]);
+    label.classList.toggle('on', i > -1);
+  }
+  if (i > -1) stepDecode();
+  label.style.left = px + 'px';
+  label.style.top  = py + 'px';
+}
+
+/* hover text decode: every line starts as ÷÷÷ (spaces kept) and resolves left to right */
+let decode = null;
+function startDecode(w){
+  const lines = [w.title, w.tags, w.year].filter(Boolean).map(String);
+  label.innerHTML = lines.map(() => '<div><span></span></div>').join('');
+  decode = { lines, spans:[...label.querySelectorAll('span')], t0:performance.now(), done:false };
+  stepDecode();
+}
+function stepDecode(){
+  if (!decode || decode.done) return;
+  const n = reduceMotion ? Infinity : Math.floor((performance.now() - decode.t0) / 1000 * CONFIG.decodeSpeed);
+  let finished = true;
+  decode.lines.forEach((txt, k) => {
+    const chars = [...txt];
+    if (n < chars.length) finished = false;
+    decode.spans[k].textContent = chars.map((c, j) => j < n || c === ' ' ? c : CONFIG.decodeChar).join('');
+  });
+  decode.done = finished;
+}
+
+function tick(t){
+  const dt = Math.min(t - last, 64) / 1000; last = t;
+  const target = hovering && canHover ? CONFIG.hoverSpeed : 1;
+  mult += (target - mult) * Math.min(1, dt * 6);
+  const auto = (reduceMotion || aboutOpen) ? 0 : CONFIG.speed * mult * dt;
+  const step = pending * CONFIG.smooth * Math.min(dt * 60, 3);
+  pending -= step;
+  x += auto + step;
+  if (setW > 0) x = ((x % setW) + setW) % setW;
+  track.style.transform = `translate3d(${-x}px,0,0)`;
+  updateLabel();
+  requestAnimationFrame(tick);
+}
+
+/* about panel */
+let aboutOpen = false;
+const about = document.getElementById('about');
+function toggleAbout(open = !aboutOpen){
+  aboutOpen = open;
+  about.classList.toggle('open', open);
+  about.setAttribute('aria-hidden', !open);
+}
+document.getElementById('aboutBtn').onclick = () => toggleAbout(true);
+document.getElementById('aboutClose').onclick = () => toggleAbout(false);
+stage.addEventListener('click', () => aboutOpen && toggleAbout(false));
+
+build();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
